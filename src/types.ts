@@ -19,7 +19,7 @@ export interface GeneratedWorld {
 }
 export interface WorldGenerationRequest { template:WorldDefinition; selectedThemes:string[]; customPrompt?:string }
 export interface WorldGenerationProvider {id:string;generateThemeTags(template:WorldDefinition,customPrompt?:string):Promise<string[]>;generateWorld(request:WorldGenerationRequest):Promise<GeneratedWorld>;generateProgressionSystem(world:GeneratedWorld,template:WorldDefinition,selectedThemes:string[]):Promise<ProgressionSystem>}
-export interface FamilyCard { id:string; worldId:WorldId; label:string; parents:string; socialClass:string; location:string; advantages:string[]; risks:string[]; hiddenSecret:string; birthFit?:string[] }
+export interface FamilyCard { id:string; worldId:WorldId; label:string; parents:string; socialClass:string; location:string; advantages:string[]; risks:string[]; hiddenSecret:string }
 
 export type LifeStage = '新生儿'|'幼儿'|'童年'|'少年'|'青年'|'成年'|'老年';
 export type AttributeKey = 'physique'|'intelligence'|'charisma'|'willpower'|'creativity'|'social'|'morality'|'luck';

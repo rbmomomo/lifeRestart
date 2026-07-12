@@ -14,5 +14,5 @@ describe('成长体系严格校验',()=>{
  it('拒绝模式不符和 mixed 单调寿命',()=>{expect(()=>validateProgressionSystem(make('increasing',[30,20,40]))).toThrow('模式');expect(()=>validateProgressionSystem(make('mixed',[10,20,30]))).toThrow('模式')});
 });
 
-import {rankFamilies,sampleFamilies} from '../src/domain/generators';
-describe('预生成家庭池本地选择',()=>{const pool=Array.from({length:12},(_,i)=>({id:`f${i}`,worldId:'modern-city' as const,label:i===7?'温暖之家':`家庭${i}`,parents:'父母',socialClass:'普通',location:'城',advantages:i===7?['温暖陪伴']:['稳定'],risks:['压力'],hiddenSecret:'秘密'}));it('本地抽样互不重复且不改变稳定ID',()=>{const cards=sampleFamilies(pool,3);expect(new Set(cards.map(x=>x.id)).size).toBe(3);expect(cards.every(x=>pool.some(p=>p.id===x.id))).toBe(true)});it('问答按AI预生成的适配标签排序家庭',()=>{const tagged=pool.map((x,i)=>({...x,birthFit:i===9?['渴望远行']:[]}));expect(rankFamilies(tagged,{path:'渴望远行'})[0].id).toBe('f9')})});
+import {sampleFamilies} from '../src/domain/generators';
+describe('预生成家庭池本地选择',()=>{const pool=Array.from({length:21},(_,i)=>({id:`f${i}`,worldId:'modern-city' as const,label:`家庭${i}`,parents:'父母',socialClass:'普通',location:'城',advantages:['稳定'],risks:['压力'],hiddenSecret:'秘密'}));it('从21个候选中本地抽样且ID稳定、同批不重复',()=>{const cards=sampleFamilies(pool,3);expect(pool).toHaveLength(21);expect(new Set(cards.map(x=>x.id)).size).toBe(3);expect(cards.every(x=>pool.some(p=>p.id===x.id))).toBe(true)})});
