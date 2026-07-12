@@ -1,4 +1,4 @@
-# 浮生：AI 开放式人生模拟器
+# 浮生万象：AI 开放式人生模拟器
 
 React + TypeScript + Vite MVP。当前核心流程：
 

@@ -1,6 +1,6 @@
 import type { SimulatorState } from '../types';
 
-const STORAGE_KEY = 'ai-life-simulator-mvp';
+const STORAGE_KEY = 'fusheng-ai-life-state';
 
 export function loadState(): SimulatorState | null {
   if (typeof window === 'undefined') return null;
