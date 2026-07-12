@@ -21,7 +21,7 @@ export type LifeAttributes = Record<AttributeKey,number>;
 export interface LifeVitals { health:number; energy:number; mood:number; stress:number }
 export interface FamilyMember { id:string; name:string; role:string; ageMonths:number; ageYears:number; alive:boolean; occupation:string; health:number; mood:number; relationship:number; personality:string[]; goals:string[] }
 export type SocialCharacter=FamilyMember;
-export interface TimelineRecord { id:string; ageMonths:number; title:string; description:string; kind:'birth'|'birthday'|'stage'|'event'; effectsSummary?:string[] }
+export interface TimelineRecord { id:string; ageMonths:number; title:string; description:string; kind:'birth'|'birthday'|'stage'|'event'|'passage'; effectsSummary?:string[] }
 export type LifeEventCategory='family'|'health'|'growth'|'exploration'|'school'|'peers'|'education'|'career'|'relationship'|'memory'|'legacy'|'danger'|'other';
 export type LifeEffect=
  | {type:'modify_attribute';attribute:AttributeKey;amount:number}
@@ -36,7 +36,7 @@ export type LifeEffect=
  | {type:'add_fact';fact:string};
 export interface LifeEventChoice {id:string;label:string;intent:string;effects:LifeEffect[]}
 export interface PendingLifeEvent { id:string; category:LifeEventCategory; title:string; description:string; participants:string[]; choices:LifeEventChoice[]; advanceMonths:number }
-export interface LifeState { ageMonths:number; lifeStage:LifeStage; alive:boolean; attributes:LifeAttributes; vitals:LifeVitals; personalMoney:number; familyWealth:number; currentLocation:string; familyMembers:FamilyMember[]; socialCharacters:SocialCharacter[]; facts:string[]; timeline:TimelineRecord[]; pendingEvent?:PendingLifeEvent; endedAtAgeMonths?:number; endReason?:string; endingSummary?:string }
+export interface LifeState { ageMonths:number; lifespanLimitMonths:number; lifeStage:LifeStage; alive:boolean; attributes:LifeAttributes; vitals:LifeVitals; personalMoney:number; familyWealth:number; currentLocation:string; familyMembers:FamilyMember[]; socialCharacters:SocialCharacter[]; facts:string[]; timeline:TimelineRecord[]; pendingEvent?:PendingLifeEvent; endedAtAgeMonths?:number; endReason?:string; endingSummary?:string }
 export interface CharacterProfile { name:string; gender:GenderOption }
 export interface NarrativeContext { template:WorldDefinition; generatedWorld:GeneratedWorld; family:FamilyCard; character:CharacterProfile; talents:string[]; birthMethod:BirthMethod }
 export interface FamilyGenerationRequest { template:WorldDefinition; generatedWorld:GeneratedWorld; birthMethod:BirthMethod; birthAnswers?:Partial<BirthAnswers> }
@@ -47,5 +47,5 @@ export interface SimulatorState { worldId?:WorldId; customWorldPrompt:string; th
 
 export type AiApiFormat = 'openai' | 'anthropic';
 export interface AiSettings { format:AiApiFormat; endpoint:string; apiKey:string; model:string; maxTokens?:number; temperature?:number }
-export interface LifeEventGenerationContext {state:LifeState;world:GeneratedWorld;character:CharacterProfile;advanceMonths:1|3|6}
+export interface LifeEventGenerationContext {state:LifeState;world:GeneratedWorld;character:CharacterProfile;advanceMonths:number}
 export interface AiProvider extends WorldGenerationProvider, AiNarrativeProvider { testConnection():Promise<string>; listModels():Promise<string[]>; generateFamilies(request:FamilyGenerationRequest):Promise<FamilyCard[]>; generateRandomFamily(request:FamilyGenerationRequest):Promise<FamilyCard>; generateTalents(request:TalentGenerationRequest):Promise<string[]>; generateLifeEvent(context:LifeEventGenerationContext):Promise<PendingLifeEvent>; generateEventOutcomeNarrative?(context:LifeEventGenerationContext,event:PendingLifeEvent,choice:LifeEventChoice):Promise<string> }
