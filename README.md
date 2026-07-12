@@ -9,7 +9,7 @@ React + TypeScript + Vite。流程为：配置 AI → 选择模板 → AI 生成
 - API 基础地址（通常填写到 `/v1`）：OpenAI 自动请求 `/chat/completions` 和 `/models`，Anthropic 自动请求 `/messages` 和 `/models`
 - 即使误填完整的 `/chat/completions`、`/messages` 或 `/models`，也会先规范化，避免重复路径
 - API Key 与模型；可点击“拉取模型”从服务端读取，也可继续手动填写
-- 最大输出 token、temperature 均为可选；留空时请求中不会发送对应字段
+- 最大输出 token、temperature 均为可选输入；输入框留空时分别按 `8192` 和 `0.7` 发送，填写后使用自定义值
 
 配置只存储在浏览器 `localStorage` 的独立键中，不进入 `SimulatorState`/游戏存档，也不会被源码提交。真实密钥仍会由浏览器直接发送到用户填写的 API 地址，因此应仅使用可信服务和设备，并确保服务支持浏览器 CORS。设置支持显示/隐藏 Key、拉取模型、测试连接、保存和清空。模型接口兼容 `data: [{id}]`、`models: [{id/name}]` 以及字符串/对象数组，并会去重排序。Anthropic 服务若强制要求 `max_tokens`，在该项留空时将由 API 返回明确错误。
 

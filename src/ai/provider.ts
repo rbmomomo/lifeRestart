@@ -21,10 +21,13 @@ export function parseModelList(data:unknown):string[]{
  const names=source.map((item:unknown)=>typeof item==='string'?item:item&&typeof item==='object'?(item as any).id??(item as any).name:'').filter((x:unknown):x is string=>typeof x==='string'&&Boolean(x.trim())).map((x:string)=>x.trim());
  return [...new Set<string>(names)].sort((a,b)=>a.localeCompare(b));
 }
+export const DEFAULT_MAX_TOKENS = 8192;
+export const DEFAULT_TEMPERATURE = 0.7;
+
 export function buildChatBody(s:AiSettings,system:string,user:string,maxTokens=s.maxTokens){
  const body:any=s.format==='anthropic'?{model:s.model,system,messages:[{role:'user',content:user}]}:{model:s.model,messages:[{role:'system',content:system},{role:'user',content:user}]};
- if(maxTokens!==undefined)body[s.format==='anthropic'?'max_tokens':'max_tokens']=maxTokens;
- if(s.temperature!==undefined)body.temperature=s.temperature;
+ body.max_tokens=maxTokens??DEFAULT_MAX_TOKENS;
+ body.temperature=s.temperature??DEFAULT_TEMPERATURE;
  return body;
 }
 export class RemoteAiProvider implements AiProvider{

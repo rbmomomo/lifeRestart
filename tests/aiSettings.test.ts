@@ -14,7 +14,7 @@ describe('AI URL 规范化',()=>{
  });
 });
 describe('可选请求参数',()=>{
- it('空值不发送',()=>{const body=buildChatBody({format:'anthropic',endpoint:'x',apiKey:'k',model:'m'},'s','u');expect(body).not.toHaveProperty('max_tokens');expect(body).not.toHaveProperty('temperature')});
+ it('空值使用默认参数',()=>{const body=buildChatBody({format:'anthropic',endpoint:'x',apiKey:'k',model:'m'},'s','u');expect(body.max_tokens).toBe(8192);expect(body.temperature).toBe(.7)});
  it('填写后发送',()=>{const body=buildChatBody({format:'openai',endpoint:'x',apiKey:'k',model:'m',maxTokens:99,temperature:.4},'s','u');expect(body.max_tokens).toBe(99);expect(body.temperature).toBe(.4)});
  it('配置只校验填写的可选值',()=>{const base={format:'openai' as const,endpoint:'x',apiKey:'k',model:'m'};expect(isAiConfigured(base)).toBe(true);expect(isAiConfigured({...base,maxTokens:0})).toBe(false);expect(isAiConfigured({...base,temperature:3})).toBe(false)});
 });
