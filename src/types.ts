@@ -18,3 +18,7 @@ export interface NarrativeContext { template:WorldDefinition; generatedWorld:Gen
 export interface AiNarrativeProvider { id:string; generateBirthNarrative(context:NarrativeContext):Promise<string> }
 export type SimulatorStep = 'welcome'|'world-select'|'world-detail'|'theme-select'|'world-generating'|'world-confirm'|'birth-method'|'family-selection'|'character-create'|'talent-select'|'birth-result'|'life-home';
 export interface SimulatorState { worldId?:WorldId; customWorldPrompt:string; themeTags:string[]; selectedThemes:string[]; generatedWorld?:GeneratedWorld; birthMethod?:BirthMethod; familyCards:FamilyCard[]; selectedFamilyId?:string; character:CharacterProfile; offeredTalents:string[]; selectedTalents:string[]; birthNarrative:string; currentStep:SimulatorStep }
+
+export type AiApiFormat = 'openai' | 'anthropic';
+export interface AiSettings { format:AiApiFormat; endpoint:string; apiKey:string; model:string; maxTokens:number; temperature:number }
+export interface AiProvider extends WorldGenerationProvider, AiNarrativeProvider { testConnection():Promise<string> }
