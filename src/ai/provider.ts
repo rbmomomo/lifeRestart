@@ -45,7 +45,7 @@ export class RemoteAiProvider implements AiProvider{
   const brief={templateName:template.name,worldBoundary:template.description,tone:template.atmosphere,referenceDimensions:template.keywords,customPrompt};
   const text=await this.chat(
    '你是富有创造力的人生模拟器世界设计师。必须仅返回 JSON 字符串数组，不要解释。每次请求都要重新构思，不能输出固定标签表。',
-   `请为这个世界模板即兴生成严格恰好10个互不重复的中文主题标签，供玩家选择3到5个。\n要求：\n1. 每个标签2到6个汉字；\n2. 十项要覆盖情感关系、家庭或身份、成长场景、职业或生存道路、社会矛盾、危险秘密等不同维度；\n3. 至少6项必须是结合本次世界重新创造的具体主题，不得只是机械照抄参考词；\n4. 同一模板重复请求时也应产生明显不同的组合；\n5. 标签必须符合模板世界边界，现代都市不能出现修仙，古代王朝不能出现互联网；\n6. 仅输出JSON数组。\n本次创作扰动码：${creativeNonce}\n模板边界：${JSON.stringify(brief)}`
+   `请为这个世界模板即兴生成严格恰好10个互不重复的中文主题标签，供玩家选择3到5个。\n要求：\n1. 每个标签2到6个汉字；\n2. 严格10项中，约5到6项要形成两组明显关联的主题，每组约2到3项；同组主题被玩家选中后，应能自然串成一条连续人生主线或层层推进的矛盾链；\n3. 其余约4到5项应彼此相对独立，也与两组主线保持距离，用于制造支线、偶遇和意外转折；\n4. 标签文字本身绝对不要出现组号、分组、主线、支线等说明，也不要输出嵌套数组或对象；\n5. 十项整体覆盖情感关系、家庭或身份、成长场景、职业或生存道路、社会矛盾、危险秘密等维度；至少6项必须结合本次世界重新创造，不得机械照抄参考词；\n6. 同一模板重复请求时应产生明显不同的组合；所有标签必须符合模板边界，现代都市不能出现修仙，古代王朝不能出现互联网；\n7. 最终仍只输出一个合法JSON字符串数组，严格恰好10个互不重复的字符串，不要任何解释。\n本次创作扰动码：${creativeNonce}\n模板边界：${JSON.stringify(brief)}`
   );
   const value=extractJson(text);if(!Array.isArray(value))throw new Error('主题标签必须是 JSON 数组');const tags=[...new Set(value.filter(x=>typeof x==='string').map(x=>x.trim()).filter(Boolean))];if(tags.length!==10)throw new Error(`AI 必须返回恰好 10 个不同标签，实际为 ${tags.length} 个`);return tags
  }

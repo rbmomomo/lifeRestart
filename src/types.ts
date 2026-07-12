@@ -13,7 +13,7 @@ export interface GeneratedWorld {
 export interface WorldGenerationRequest { template:WorldDefinition; selectedThemes:string[]; customPrompt?:string }
 export interface WorldGenerationProvider { id:string; generateThemeTags(template:WorldDefinition, customPrompt?:string):Promise<string[]>; generateWorld(request:WorldGenerationRequest):Promise<GeneratedWorld> }
 export interface FamilyCard { id:string; worldId:WorldId; label:string; parents:string; socialClass:string; location:string; advantages:string[]; risks:string[]; hiddenSecret:string }
-export interface CharacterProfile { name:string; gender:GenderOption; personality:string }
+export interface CharacterProfile { name:string; gender:GenderOption }
 export interface NarrativeContext { template:WorldDefinition; generatedWorld:GeneratedWorld; family:FamilyCard; character:CharacterProfile; talents:string[]; birthMethod:BirthMethod }
 export interface AiNarrativeProvider { id:string; generateBirthNarrative(context:NarrativeContext):Promise<string> }
 export type SimulatorStep = 'welcome'|'world-select'|'world-detail'|'theme-select'|'world-generating'|'world-confirm'|'birth-method'|'family-selection'|'character-create'|'talent-select'|'birth-result'|'life-home';
