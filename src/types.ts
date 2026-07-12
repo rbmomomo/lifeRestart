@@ -15,7 +15,7 @@ export interface GeneratedWorld {
   templateId: WorldId; name:string; selectedThemes:string[]; eraBackground:string; socialStructure:string; coreConflict:string;
   livingEnvironment:string; growthPaths:string; loveMarriageRules:string; familyStructure:string; dangers:string;
   lifespan:string; birthRegions:string[]; overview:string; generatedAt:string; progressionSystem:ProgressionSystem;
-  familyPool:FamilyCard[]; birthQuestions:BirthQuestion[];
+  familyPool:FamilyCard[]; birthQuestions:BirthQuestion[]; attributeLabels:AttributeLabels;
 }
 export interface WorldGenerationRequest { template:WorldDefinition; selectedThemes:string[]; customPrompt?:string }
 export interface WorldGenerationProvider {id:string;generateThemeTags(template:WorldDefinition,customPrompt?:string):Promise<string[]>;generateWorld(request:WorldGenerationRequest):Promise<GeneratedWorld>;generateProgressionSystem(world:GeneratedWorld,template:WorldDefinition,selectedThemes:string[]):Promise<ProgressionSystem>}
@@ -24,6 +24,7 @@ export interface FamilyCard { id:string; worldId:WorldId; label:string; parents:
 export type LifeStage = '新生儿'|'幼儿'|'童年'|'少年'|'青年'|'成年'|'老年';
 export type AttributeKey = 'physique'|'intelligence'|'charisma'|'willpower'|'creativity'|'social'|'morality'|'luck';
 export type LifeAttributes = Record<AttributeKey,number>;
+export type AttributeLabels = Record<AttributeKey,string>;
 export interface LifeVitals { health:number; energy:number; mood:number; stress:number }
 export interface FamilyMember { id:string; name:string; role:string; ageMonths:number; ageYears:number; alive:boolean; occupation:string; health:number; mood:number; relationship:number; personality:string[]; goals:string[] }
 export type SocialCharacter=FamilyMember;
@@ -45,7 +46,7 @@ export type LifeEffect=
 export interface LifeEventChoice {id:string;label:string;intent:string;effects:LifeEffect[]}
 export interface PendingLifeEvent {id:string;eventType:'ordinary'|'breakthrough';category:LifeEventCategory;title:string;description:string;participants:string[];choices:LifeEventChoice[];advanceMonths:number}
 export interface LifeProgression {systemName:string;tierIndex:number;tierName:string;progress:number;nextTierProgress?:number;pendingBreakthrough?:boolean;tiers?:ProgressionTier[]}
-export interface LifeState {ageMonths:number;lifespanLimitMonths:number;currentLifespanRule:LifespanRule;progression:LifeProgression;lifeStage:LifeStage;alive:boolean;attributes:LifeAttributes;vitals:LifeVitals;personalMoney:number;familyWealth:number;currentLocation:string;familyMembers:FamilyMember[];socialCharacters:SocialCharacter[];facts:string[];timeline:TimelineRecord[];eventQueue:PendingLifeEvent[];pendingEvent?:PendingLifeEvent;endedAtAgeMonths?:number;endReason?:string;endingSummary?:string}
+export interface LifeState {ageMonths:number;attributeLabels:AttributeLabels;lifespanLimitMonths:number;currentLifespanRule:LifespanRule;progression:LifeProgression;lifeStage:LifeStage;alive:boolean;attributes:LifeAttributes;vitals:LifeVitals;personalMoney:number;familyWealth:number;currentLocation:string;familyMembers:FamilyMember[];socialCharacters:SocialCharacter[];facts:string[];timeline:TimelineRecord[];eventQueue:PendingLifeEvent[];pendingEvent?:PendingLifeEvent;endedAtAgeMonths?:number;endReason?:string;endingSummary?:string}
 export interface CharacterProfile { name:string; gender:GenderOption }
 export interface NarrativeContext { template:WorldDefinition; generatedWorld:GeneratedWorld; family:FamilyCard; character:CharacterProfile; talents:string[]; birthMethod:BirthMethod }
 export interface FamilyGenerationRequest { template:WorldDefinition; generatedWorld:GeneratedWorld; birthMethod:BirthMethod; birthAnswers?:Partial<BirthAnswers> }
@@ -59,4 +60,4 @@ export interface AiSettings { format:AiApiFormat; endpoint:string; apiKey:string
 export interface LifeEventGenerationContext {state:LifeState;world:GeneratedWorld;character:CharacterProfile;advanceMonths:number}
 export interface EventResolution {outcome:'ordinary'|'breakthrough_success'|'breakthrough_failure';summary:string[];breakthrough?:{success:boolean;risk:'safe'|'balanced'|'reckless';chance:number}}
 export interface ResolvedEventChoice {state:LifeState;resolution:EventResolution;timelineId:string}
-export interface AiProvider extends WorldGenerationProvider,AiNarrativeProvider {testConnection():Promise<string>;listModels():Promise<string[]>;generateFamilies(request:FamilyGenerationRequest):Promise<FamilyCard[]>;generateRandomFamily(request:FamilyGenerationRequest):Promise<FamilyCard>;generateTalents(request:TalentGenerationRequest):Promise<string[]>;generateLifeEvent(context:LifeEventGenerationContext):Promise<PendingLifeEvent>;generateLifeEventBatch(context:LifeEventGenerationContext):Promise<PendingLifeEvent[]>;generateEventOutcomeNarrative?(context:LifeEventGenerationContext,event:PendingLifeEvent,choice:LifeEventChoice,resolution:EventResolution):Promise<string>}
+export interface AiProvider extends WorldGenerationProvider,AiNarrativeProvider {testConnection():Promise<string>;listModels():Promise<string[]>;generateFamilies(request:FamilyGenerationRequest):Promise<FamilyCard[]>;generateRandomFamily(request:FamilyGenerationRequest):Promise<FamilyCard>;generateTalents(request:TalentGenerationRequest):Promise<string[]>;generateLifeEvent(context:LifeEventGenerationContext):Promise<PendingLifeEvent>;generateEventOutcomeNarrative?(context:LifeEventGenerationContext,event:PendingLifeEvent,choice:LifeEventChoice,resolution:EventResolution):Promise<string>}
