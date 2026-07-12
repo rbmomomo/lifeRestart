@@ -1,5 +1,6 @@
-import type {AiProvider,AiSettings,FamilyCard,FamilyGenerationRequest,GeneratedWorld,NarrativeContext,TalentGenerationRequest,WorldDefinition,WorldGenerationRequest} from '../types';
+import type {AiProvider,AiSettings,FamilyCard,FamilyGenerationRequest,GeneratedWorld,LifeEventGenerationContext,NarrativeContext,PendingLifeEvent,TalentGenerationRequest,WorldDefinition,WorldGenerationRequest} from '../types';
 import {cryptoRandomIndex} from '../domain/generators';
+import {validateLifeEvent} from '../life/engine';
 
 export function extractJson(text:string):unknown{
  const clean=text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
@@ -65,4 +66,11 @@ export class RemoteAiProvider implements AiProvider{
  async generateRandomFamily(r:FamilyGenerationRequest){const cards=await this.generateFamilies(r);return cards[cryptoRandomIndex(cards.length)]}
  async generateTalents(r:TalentGenerationRequest){const text=await this.chat('你是人生模拟器天赋生成器。仅返回合法JSON字符串数组。',`严格生成恰好10个互不重复的中文天赋字符串，必须同时符合生成世界、已选家庭与角色，不得使用固定天赋池。资料：${JSON.stringify({world:r.generatedWorld,family:r.family,character:r.character})}`);return validateTalents(extractJson(text))}
  async generateBirthNarrative(c:NarrativeContext){const text=await this.chat('你是中文文学叙事者。只返回出生篇章正文，不要标题、JSON或代码块。',`请写一段具体、有氛围且与设定一致的出生叙事（约500-800字），不得声称自己是AI。资料：${JSON.stringify(c)}`);if(!text.trim())throw new Error('AI 未生成出生叙事');return text.trim().replace(/^```(?:text|markdown)?\s*/i,'').replace(/\s*```$/,'')}
+ async generateLifeEvent(c:LifeEventGenerationContext):Promise<PendingLifeEvent>{
+  const s=c.state, stageGuide={新生儿:'家庭、健康、成长',幼儿:'家庭与探索',童年:'学校与家庭',少年:'同伴与学业',青年:'教育、职业、关系',成年:'事业、家庭、健康',老年:'健康、回忆、传承'}[s.lifeStage];
+  const brief={world:{name:c.world.name,overview:c.world.overview,dangers:c.world.dangers,socialStructure:c.world.socialStructure},character:c.character,advanceMonths:c.advanceMonths,state:{ageMonths:s.ageMonths,stage:s.lifeStage,attributes:s.attributes,vitals:s.vitals,money:{personal:s.personalMoney,family:s.familyWealth},location:s.currentLocation,family:s.familyMembers,social:s.socialCharacters,facts:s.facts},recentTimeline:s.timeline.slice(-10).map(x=>({title:x.title,description:x.description}))};
+  const text=await this.chat('你是人生事件导演。只返回严格合法JSON对象，不得解释。效果只能使用指定白名单字段，不得输出对象路径。',`为这次推进生成一个必然发生、适龄且不重复近期内容的事件。阶段重点：${stageGuide}。返回字段 category,title,description,participants,choices；choices严格2-4项，每项含id,label,intent,effects。effects白名单：modify_attribute(attribute为8项之一,amount -10..10), modify_vital(vital为health/energy/mood/stress,amount -20..20), modify_money(account personal/family,amount -100000..100000), modify_relationship(memberId,amount -20..20), change_location(location), add_character(character含name/role等), update_character(memberId及允许字段), kill_character(memberId,reason), kill_player(reason), add_fact(fact)。每个选择给出合理建议效果；不得创造任意状态路径。上下文：${JSON.stringify(brief)}`);
+  return validateLifeEvent(extractJson(text),s,c.advanceMonths)
+ }
+ async generateEventOutcomeNarrative(c:LifeEventGenerationContext,event:PendingLifeEvent,choice:PendingLifeEvent['choices'][number]){const text=await this.chat('你是简洁的中文人生叙事者。只返回结果正文。',`用80-180字叙述选择后的结果，不新增未提供的数值效果。资料：${JSON.stringify({world:c.world.name,age:c.state.ageMonths,event,choice})}`);if(!text.trim())throw new Error('AI 未生成结果叙事');return text.trim()}
 }
