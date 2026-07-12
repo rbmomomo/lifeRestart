@@ -1,4 +1,5 @@
-import type {AiProvider,AiSettings,GeneratedWorld,NarrativeContext,WorldDefinition,WorldGenerationRequest} from '../types';
+import type {AiProvider,AiSettings,FamilyCard,FamilyGenerationRequest,GeneratedWorld,NarrativeContext,TalentGenerationRequest,WorldDefinition,WorldGenerationRequest} from '../types';
+import {cryptoRandomIndex} from '../domain/generators';
 
 export function extractJson(text:string):unknown{
  const clean=text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
@@ -21,6 +22,13 @@ export function parseModelList(data:unknown):string[]{
  const names=source.map((item:unknown)=>typeof item==='string'?item:item&&typeof item==='object'?(item as any).id??(item as any).name:'').filter((x:unknown):x is string=>typeof x==='string'&&Boolean(x.trim())).map((x:string)=>x.trim());
  return [...new Set<string>(names)].sort((a,b)=>a.localeCompare(b));
 }
+export function validateFamilies(value:unknown,worldId:FamilyCard['worldId']):FamilyCard[]{
+ if(!Array.isArray(value)||value.length!==3)throw new Error('AI 必须返回恰好 3 个家庭');
+ const fields=['label','parents','socialClass','location','hiddenSecret'] as const;
+ const cards=value.map((x:any,i)=>{if(!x||typeof x!=='object'||fields.some(k=>typeof x[k]!=='string'||!x[k].trim())||!Array.isArray(x.advantages)||!x.advantages.length||x.advantages.some((v:any)=>typeof v!=='string'||!v.trim())||!Array.isArray(x.risks)||!x.risks.length||x.risks.some((v:any)=>typeof v!=='string'||!v.trim()))throw new Error(`第 ${i+1} 个家庭结构不完整`);return {id:`ai-family-${Date.now()}-${i}-${crypto.getRandomValues(new Uint32Array(1))[0]}`,worldId,label:x.label.trim(),parents:x.parents.trim(),socialClass:x.socialClass.trim(),location:x.location.trim(),advantages:x.advantages.map((v:string)=>v.trim()),risks:x.risks.map((v:string)=>v.trim()),hiddenSecret:x.hiddenSecret.trim()}});
+ const keys=cards.map(x=>`${x.label}\u0000${x.parents}\u0000${x.location}`);if(new Set(keys).size!==3)throw new Error('同批家庭的名称、父母与地点组合必须互不重复');return cards;
+}
+export function validateTalents(value:unknown):string[]{if(!Array.isArray(value))throw new Error('天赋必须是 JSON 数组');const values=value.map(x=>typeof x==='string'?x.trim():'').filter(Boolean);if(values.length!==10||new Set(values).size!==10)throw new Error('AI 必须返回恰好 10 个互不重复的天赋');return values}
 export const DEFAULT_MAX_TOKENS = 8192;
 export const DEFAULT_TEMPERATURE = 0.7;
 
@@ -53,5 +61,8 @@ export class RemoteAiProvider implements AiProvider{
   const creativeNonce=`${Date.now()}-${crypto.getRandomValues(new Uint32Array(2)).join('-')}`;
   const templateBrief={id:req.template.id,name:req.template.name,headline:req.template.headline,description:req.template.description,eraTag:req.template.eraTag,atmosphere:req.template.atmosphere,worldRules:req.template.detailSections,customPrompt:req.customPrompt};
   const text=await this.chat('你是严谨而富有原创性的世界构建器。仅返回合法 JSON 对象，所有字段必须完整。不要照抄模板示例，要根据玩家选择重新推演一个具体世界。',`根据世界边界和玩家主题，推演一个全新的、内部自洽且适合模拟完整人生的世界。模板只是类型边界，不是现成剧情；不得读取或复用任何固定家庭、天赋或事件答案。\n必须包含字符串字段 name,eraBackground,socialStructure,coreConflict,livingEnvironment,growthPaths,loveMarriageRules,familyStructure,dangers,lifespan,overview，以及至少4项的非空字符串数组 birthRegions。\n推演时必须说明所选主题如何互相影响，而不是逐项罗列。世界名称、社会制度、地区和矛盾应具体原创。\n本次创作扰动码：${creativeNonce}\n世界边界：${JSON.stringify(templateBrief)}\n玩家选择主题：${JSON.stringify(req.selectedThemes)}`);const x=extractJson(text) as any;const fields=['name','eraBackground','socialStructure','coreConflict','livingEnvironment','growthPaths','loveMarriageRules','familyStructure','dangers','lifespan','overview'];if(!x||typeof x!=='object'||fields.some(k=>typeof x[k]!=='string'||!x[k].trim())||!Array.isArray(x.birthRegions)||!x.birthRegions.length||x.birthRegions.some((v:any)=>typeof v!=='string'||!v.trim()))throw new Error('AI 返回的世界结构字段缺失或格式错误');return {templateId:req.template.id,selectedThemes:req.selectedThemes,generatedAt:new Date().toISOString(),...Object.fromEntries(fields.map(k=>[k,x[k].trim()])),birthRegions:x.birthRegions.map((v:string)=>v.trim())} as GeneratedWorld}
+ async generateFamilies(r:FamilyGenerationRequest){const text=await this.chat('你是人生模拟器家庭生成器。仅返回合法JSON数组。',`严格生成3个结构完整且本批互不重复的家庭。每项字段：label,parents,socialClass,location,advantages(非空字符串数组),risks(非空字符串数组),hiddenSecret。家庭必须由本次世界与问答原创推演，禁止固定内容库。三项的label+parents+location组合不得相同。资料：${JSON.stringify({world:r.generatedWorld,birthMethod:r.birthMethod,birthAnswers:r.birthAnswers})}`);return validateFamilies(extractJson(text),r.template.id)}
+ async generateRandomFamily(r:FamilyGenerationRequest){const cards=await this.generateFamilies(r);return cards[cryptoRandomIndex(cards.length)]}
+ async generateTalents(r:TalentGenerationRequest){const text=await this.chat('你是人生模拟器天赋生成器。仅返回合法JSON字符串数组。',`严格生成恰好10个互不重复的中文天赋字符串，必须同时符合生成世界、已选家庭与角色，不得使用固定天赋池。资料：${JSON.stringify({world:r.generatedWorld,family:r.family,character:r.character})}`);return validateTalents(extractJson(text))}
  async generateBirthNarrative(c:NarrativeContext){const text=await this.chat('你是中文文学叙事者。只返回出生篇章正文，不要标题、JSON或代码块。',`请写一段具体、有氛围且与设定一致的出生叙事（约500-800字），不得声称自己是AI。资料：${JSON.stringify(c)}`);if(!text.trim())throw new Error('AI 未生成出生叙事');return text.trim().replace(/^```(?:text|markdown)?\s*/i,'').replace(/\s*```$/,'')}
 }
