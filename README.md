@@ -6,11 +6,12 @@ React + TypeScript + Vite。流程为：配置 AI → 选择模板 → AI 生成
 
 应用**不含本地伪 AI、不含默认 endpoint、Key 或模型，也没有本地生成 fallback**。开始前须在“AI 设置”中自行填写：
 
-- OpenAI 兼容 Chat Completions：填写完整的聊天补全 API 地址
-- Anthropic Messages：填写完整的 Messages API 地址
-- API Key、模型、最大输出 token、temperature
+- API 基础地址（通常填写到 `/v1`）：OpenAI 自动请求 `/chat/completions` 和 `/models`，Anthropic 自动请求 `/messages` 和 `/models`
+- 即使误填完整的 `/chat/completions`、`/messages` 或 `/models`，也会先规范化，避免重复路径
+- API Key 与模型；可点击“拉取模型”从服务端读取，也可继续手动填写
+- 最大输出 token、temperature 均为可选；留空时请求中不会发送对应字段
 
-配置只存储在浏览器 `localStorage` 的独立键中，不进入 `SimulatorState`/游戏存档，也不会被源码提交。真实密钥仍会由浏览器直接发送到用户填写的 API 地址，因此应仅使用可信服务和设备，并确保服务支持浏览器 CORS。设置支持显示/隐藏 Key、测试连接、保存和清空。
+配置只存储在浏览器 `localStorage` 的独立键中，不进入 `SimulatorState`/游戏存档，也不会被源码提交。真实密钥仍会由浏览器直接发送到用户填写的 API 地址，因此应仅使用可信服务和设备，并确保服务支持浏览器 CORS。设置支持显示/隐藏 Key、拉取模型、测试连接、保存和清空。模型接口兼容 `data: [{id}]`、`models: [{id/name}]` 以及字符串/对象数组，并会去重排序。Anthropic 服务若强制要求 `max_tokens`，在该项留空时将由 API 返回明确错误。
 
 所有主题、结构化世界和出生篇章都由统一的 `RemoteAiProvider` 调用真实 API。主题标签由 AI 每次即兴生成，并加入独立创作扰动，不存在内置标签表；标签必须恰好 10 个且互不重复。
 
