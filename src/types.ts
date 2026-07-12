@@ -6,10 +6,12 @@ export type GenderOption = '女' | '男' | '非二元' | '未定';
 
 export interface FamilyArchetype { label:string; parentPairs:string[]; classes:string[]; locations:string[]; advantages:string[]; risks:string[]; secrets:string[] }
 export interface WorldDefinition { id:WorldId; name:string; subtitle:string; headline:string; description:string; eraTag:string; atmosphere:string[]; keywords:string[]; detailSections:Array<{title:string;content:string}>; talentPool:string[]; familyArchetypes:FamilyArchetype[]; starterBlessings:string[] }
+export interface ProgressionTier { name:string; requiredProgress:number; lifespanYears:number; description:string }
+export interface ProgressionSystem { name:string; unit:string; description:string; tiers:ProgressionTier[] }
 export interface GeneratedWorld {
   templateId: WorldId; name:string; selectedThemes:string[]; eraBackground:string; socialStructure:string; coreConflict:string;
   livingEnvironment:string; growthPaths:string; loveMarriageRules:string; familyStructure:string; dangers:string;
-  lifespan:string; birthRegions:string[]; overview:string; generatedAt:string;
+  lifespan:string; birthRegions:string[]; overview:string; generatedAt:string; progressionSystem:ProgressionSystem;
 }
 export interface WorldGenerationRequest { template:WorldDefinition; selectedThemes:string[]; customPrompt?:string }
 export interface WorldGenerationProvider { id:string; generateThemeTags(template:WorldDefinition, customPrompt?:string):Promise<string[]>; generateWorld(request:WorldGenerationRequest):Promise<GeneratedWorld> }
@@ -27,6 +29,7 @@ export type LifeEffect=
  | {type:'modify_attribute';attribute:AttributeKey;amount:number}
  | {type:'modify_vital';vital:keyof LifeVitals;amount:number}
  | {type:'modify_money';account:'personal'|'family';amount:number}
+ | {type:'modify_progression';amount:number}
  | {type:'modify_relationship';memberId:string;amount:number}
  | {type:'change_location';location:string}
  | {type:'add_character';character:Partial<SocialCharacter>&Pick<SocialCharacter,'name'|'role'>}
@@ -36,7 +39,8 @@ export type LifeEffect=
  | {type:'add_fact';fact:string};
 export interface LifeEventChoice {id:string;label:string;intent:string;effects:LifeEffect[]}
 export interface PendingLifeEvent { id:string; category:LifeEventCategory; title:string; description:string; participants:string[]; choices:LifeEventChoice[]; advanceMonths:number }
-export interface LifeState { ageMonths:number; lifespanLimitMonths:number; lifeStage:LifeStage; alive:boolean; attributes:LifeAttributes; vitals:LifeVitals; personalMoney:number; familyWealth:number; currentLocation:string; familyMembers:FamilyMember[]; socialCharacters:SocialCharacter[]; facts:string[]; timeline:TimelineRecord[]; pendingEvent?:PendingLifeEvent; endedAtAgeMonths?:number; endReason?:string; endingSummary?:string }
+export interface LifeProgression { systemName:string; tierIndex:number; tierName:string; progress:number; nextTierProgress?:number; tiers?:ProgressionTier[] }
+export interface LifeState { ageMonths:number; lifespanLimitMonths:number; progression:LifeProgression; lifeStage:LifeStage; alive:boolean; attributes:LifeAttributes; vitals:LifeVitals; personalMoney:number; familyWealth:number; currentLocation:string; familyMembers:FamilyMember[]; socialCharacters:SocialCharacter[]; facts:string[]; timeline:TimelineRecord[]; pendingEvent?:PendingLifeEvent; endedAtAgeMonths?:number; endReason?:string; endingSummary?:string }
 export interface CharacterProfile { name:string; gender:GenderOption }
 export interface NarrativeContext { template:WorldDefinition; generatedWorld:GeneratedWorld; family:FamilyCard; character:CharacterProfile; talents:string[]; birthMethod:BirthMethod }
 export interface FamilyGenerationRequest { template:WorldDefinition; generatedWorld:GeneratedWorld; birthMethod:BirthMethod; birthAnswers?:Partial<BirthAnswers> }
