@@ -14,13 +14,22 @@ export interface GeneratedWorld {
 export interface WorldGenerationRequest { template:WorldDefinition; selectedThemes:string[]; customPrompt?:string }
 export interface WorldGenerationProvider { id:string; generateThemeTags(template:WorldDefinition, customPrompt?:string):Promise<string[]>; generateWorld(request:WorldGenerationRequest):Promise<GeneratedWorld> }
 export interface FamilyCard { id:string; worldId:WorldId; label:string; parents:string; socialClass:string; location:string; advantages:string[]; risks:string[]; hiddenSecret:string }
+
+export type LifeStage = '新生儿'|'幼儿'|'童年'|'少年'|'青年'|'成年'|'老年';
+export type AttributeKey = 'physique'|'intelligence'|'charisma'|'willpower'|'creativity'|'social'|'morality'|'luck';
+export type LifeAttributes = Record<AttributeKey,number>;
+export interface LifeVitals { health:number; energy:number; mood:number; stress:number }
+export interface FamilyMember { id:string; name:string; role:string; ageMonths:number; ageYears:number; alive:boolean; occupation:string; health:number; mood:number; relationship:number; personality:string[]; goals:string[] }
+export interface TimelineRecord { id:string; ageMonths:number; title:string; description:string; kind:'birth'|'birthday'|'stage'|'event' }
+export interface PendingLifeEvent { id:string; title:string; description:string; choices?:Array<{id:string;label:string}> }
+export interface LifeState { ageMonths:number; lifeStage:LifeStage; alive:boolean; attributes:LifeAttributes; vitals:LifeVitals; personalMoney:number; familyWealth:number; currentLocation:string; familyMembers:FamilyMember[]; timeline:TimelineRecord[]; pendingEvent?:PendingLifeEvent }
 export interface CharacterProfile { name:string; gender:GenderOption }
 export interface NarrativeContext { template:WorldDefinition; generatedWorld:GeneratedWorld; family:FamilyCard; character:CharacterProfile; talents:string[]; birthMethod:BirthMethod }
 export interface FamilyGenerationRequest { template:WorldDefinition; generatedWorld:GeneratedWorld; birthMethod:BirthMethod; birthAnswers?:Partial<BirthAnswers> }
 export interface TalentGenerationRequest { template:WorldDefinition; generatedWorld:GeneratedWorld; family:FamilyCard; character:CharacterProfile }
 export interface AiNarrativeProvider { id:string; generateBirthNarrative(context:NarrativeContext):Promise<string> }
 export type SimulatorStep = 'welcome'|'world-select'|'world-detail'|'theme-select'|'world-generating'|'world-confirm'|'birth-method'|'birth-qa'|'family-selection'|'character-create'|'talent-select'|'birth-result'|'life-home';
-export interface SimulatorState { worldId?:WorldId; customWorldPrompt:string; themeTags:string[]; selectedThemes:string[]; generatedWorld?:GeneratedWorld; birthMethod?:BirthMethod; birthAnswers:Partial<BirthAnswers>; familyRefreshCount:number; talentRefreshCount:number; familyCards:FamilyCard[]; selectedFamilyId?:string; character:CharacterProfile; offeredTalents:string[]; selectedTalents:string[]; birthNarrative:string; currentStep:SimulatorStep }
+export interface SimulatorState { worldId?:WorldId; customWorldPrompt:string; themeTags:string[]; selectedThemes:string[]; generatedWorld?:GeneratedWorld; birthMethod?:BirthMethod; birthAnswers:Partial<BirthAnswers>; familyRefreshCount:number; talentRefreshCount:number; familyCards:FamilyCard[]; selectedFamilyId?:string; character:CharacterProfile; offeredTalents:string[]; selectedTalents:string[]; birthNarrative:string; lifeState?:LifeState; currentStep:SimulatorStep }
 
 export type AiApiFormat = 'openai' | 'anthropic';
 export interface AiSettings { format:AiApiFormat; endpoint:string; apiKey:string; model:string; maxTokens?:number; temperature?:number }
